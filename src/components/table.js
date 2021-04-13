@@ -1,34 +1,47 @@
-import React from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {clearUserData} from "../redux/actions/authActions";
+import {block, unblock, remove} from "../redux/actions/userActions";
+import {clearSelectedUsers} from "../redux/actions/selectedUsersActions";
 
-export default function Table({users, selectedUsers, toggleAllUsers, toggleUser, isChecked}) {
+export default function Table({toggleAllUsers, toggleUser, isChecked}) {
+    const selectedUsers = useSelector(state => state.selectedUsers)
+    const users = useSelector(state => state.users)
+    const userData = useSelector(state => state.auth)
+    const dispatch = useDispatch()
 
-    async function deleteUsers(){
-        console.log('1')
-        for(let user of selectedUsers){
-            await remove(user)
+    async function deleteUsers() {
+        for (let user of selectedUsers) {
+            dispatch(remove(user))
+            if (user === userData.id) dispatch(clearSelectedUsers())
         }
     }
 
-    async function remove (id) {
-        fetch(`http://localhost:8000/api/users?_id=${id}`, {
-            method : "DELETE",
-            headers: {
-                'Content-type' : "application/json"
+    async function blockUsers() {
+        for (let user of selectedUsers) {
+            dispatch(block(user))
+            if (user === userData.id) {
+               dispatch(clearUserData())
             }
-        }).then(response => response.json())
+        }
+    }
+
+    async function unblockUsers() {
+        for (let user of selectedUsers) {
+            dispatch(unblock(user))
+        }
     }
 
     return (
         <>
-            <button type='button' onClick={deleteUsers}>delete</button>
-            <button>block</button>
-            <button>unblock</button>
+            <button onClick={deleteUsers}>delete</button>
+            <button onClick={blockUsers}>block</button>
+            <button onClick={unblockUsers}>unblock</button>
 
             <table className="table">
                 <thead>
                 <tr>
                     <th scope="col">
-                        <input type="checkbox" onChange={toggleAllUsers}/>
+                        <input type="checkbox" checked={users.length === selectedUsers.length} onChange={toggleAllUsers}/>
                         <span>All</span>
                     </th>
                     <th scope="col">#</th>

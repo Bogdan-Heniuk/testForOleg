@@ -1,25 +1,16 @@
 import React, {useState} from "react";
-import jwtDecode from 'jwt-decode'
-export default function Login({setUserData}){
+import {useDispatch} from "react-redux";
+import {login} from "../redux/actions/authActions";
+import {clearSelectedUsers} from "../redux/actions/selectedUsersActions";
+export default function Login(){
+
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const dispatch = useDispatch()
 
     function submitHandler(){
-        fetch('http://localhost:8000/auth/login', {
-            method: "POST",
-            headers : {
-                'Content-type' : 'application/json'
-            },
-            body : JSON.stringify({
-                email, password
-            })
-        })
-            .then(response => response.json())
-            .then(user => {
-                if(user.hasOwnProperty('token')) {
-                    setUserData(jwtDecode(user.token))
-                }
-            })
+        dispatch(login(email, password))
+        dispatch(clearSelectedUsers())
     }
 
     return(
